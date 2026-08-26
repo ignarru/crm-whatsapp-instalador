@@ -10,6 +10,26 @@ comando.
 
 ---
 
+> ### 👋 ¿Llegaste acá y no sabés qué hacer?
+>
+> **1.** Instalá [Node.js](https://nodejs.org) (botón LTS) y
+> [git](https://git-scm.com). Siguiente, siguiente, siguiente.
+> **2.** Instalá [Claude Code](https://claude.com/claude-code) — si no usás la
+> terminal, bajá la **app de escritorio**, es una ventana normal.
+> **3.** Copiá y pegá esto en la terminal:
+> ```bash
+> git clone https://github.com/ignarru/crm-whatsapp-instalador.git
+> ```
+> **4.** Abrí esa carpeta con Claude Code y escribile: **`instalá el CRM`**
+>
+> Listo. Él se encarga del resto y te va pidiendo una cosa a la vez.
+> No hace falta que entiendas nada de lo que sigue en esta página.
+>
+> *(¿Preferís hacerlo vos, sin Claude? También se puede: mirá
+> [Empezar](#empezar) más abajo.)*
+
+---
+
 ## Por qué existe
 
 El tutorial que anda dando vueltas para montar este CRM tiene 41 pasos, cruza
