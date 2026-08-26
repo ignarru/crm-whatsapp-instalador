@@ -1,0 +1,20 @@
+{
+  "name": "crm-whatsapp-instalador",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Instalador guiado del CRM de WhatsApp (wacrm) — de 41 pasos manuales a 4 credenciales y un comando.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "instalar": "node scripts/instalar.mjs",
+    "creds": "node scripts/credenciales.mjs",
+    "paso1": "node scripts/paso1-supabase.mjs",
+    "paso2": "node scripts/paso2-meta.mjs",
+    "check": "node scripts/check.mjs",
+    "levantar": "node scripts/levantar.mjs",
+    "tunel": "node scripts/tunel.mjs",
+    "vincular": "node scripts/vincular.mjs"
+  }
+}
