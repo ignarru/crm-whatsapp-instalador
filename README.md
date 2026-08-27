@@ -160,7 +160,8 @@ rompa solo dentro de dos meses.
 | `npm run creds` | Valida las credenciales y explica qué falta |
 | `npm run paso1` | Supabase completo |
 | `npm run levantar` | Instala dependencias y arranca el CRM |
-| `npm run tunel` | Le da una dirección pública al CRM (sin cuenta en ningún lado) |
+| `npm run tunel` | Le da una dirección pública temporal (para probar, sin cuenta en ningún lado) |
+| `npm run vps` | Lo deja andando en tu servidor con dominio propio y HTTPS |
 | `npm run paso2` | Conecta WhatsApp |
 | `npm run check` | Diagnóstico de punta a punta |
 | `npm run vincular` | Guarda las credenciales fuera del repo (dos máquinas, equipo) |

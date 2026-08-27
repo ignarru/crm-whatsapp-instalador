@@ -29,6 +29,7 @@ Cuatro comandos. Cada uno es idempotente: si falla, arreglás y volvés a correr
 | `npm run paso1` | Supabase entero: proyecto, llaves, ~39 migraciones, auth, `.env.local` | credenciales |
 | `npm run levantar` | Instala deps y arranca el CRM | paso 1 hecho |
 | `npm run tunel` | URL pública temporal, la guarda sola en `PUBLIC_URL` | el CRM levantado |
+| `npm run vps` | Deja el CRM en un servidor con dominio propio y HTTPS | correrlo DENTRO del servidor |
 | `npm run paso2` | Conecta WhatsApp: webhook, suscripciones, número | URL pública viva |
 | `npm run check` | Diagnóstico completo de todo | — |
 
@@ -105,7 +106,15 @@ Aclarale dos cosas, porque generan dudas:
   en una tercera. Si cierra alguna, se corta.
 
 La URL cambia cada vez que se reabre el túnel: cuando eso pase, `npm run tunel`
-otra vez y después `paso1` y `paso2`. Para algo permanente, `docs/03-deploy.md`.
+otra vez y después `paso1` y `paso2`.
+
+**Si te dicen que lo quieren usar en serio, no de prueba**, el túnel no alcanza:
+se cae al cerrar la ventana y deja el webhook de Meta apuntando a la nada. Ahí
+va `npm run vps`, que se corre DENTRO del servidor y deja dominio fijo con
+HTTPS. Detecta solo si el servidor está limpio (levanta Caddy), si ya tiene
+Traefik/Dokploy/Coolify (se cuelga de ese proxy) o si tiene nginx (publica un
+puerto local). El paso a paso desde un VPS recién comprado está en
+`docs/03-deploy.md`.
 
 ### 5. Paso 2 — WhatsApp
 
