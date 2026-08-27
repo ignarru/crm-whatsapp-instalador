@@ -152,10 +152,30 @@ if (!ipsDominio.length) {
 } else if (ipServidor && ipsDominio.includes(ipServidor)) {
   ok(`${host} apunta acá`, ipsDominio.join(", "));
 } else {
-  warn(`${host} resuelve a ${ipsDominio.join(", ")}`, `y este servidor es ${ipServidor || "(no pude averiguarlo)"}`);
-  info("Si usás Cloudflare con el proxy naranja activado, esto es esperable.");
-  info("Si no, revisá el registro A antes de seguir: el certificado va a fallar.");
-  if (!(await confirmar("  ¿Sigo igual?", false))) salir(0);
+  // Con Cloudflare (u otro CDN) delante, el dominio NUNCA resuelve a la IP del
+  // servidor: resuelve al CDN, que después reenvía. Preguntarle a la persona
+  // "¿sigo igual?" en ese caso es hacerle dudar de algo que está bien. Lo
+  // detectamos preguntándole al propio dominio quién contesta.
+  let cdn = "";
+  try {
+    const r = await pedir(`https://${host}`, { redirect: "manual" }, 10000);
+    const s = (r.headers.get("server") || "").toLowerCase();
+    if (s.includes("cloudflare")) cdn = "Cloudflare";
+    else if (s) cdn = r.headers.get("server");
+  } catch {
+    /* no contesta todavía: normal si el router aún no existe */
+  }
+
+  if (cdn) {
+    ok(`${host} pasa por ${cdn}`, ipsDominio.slice(0, 2).join(", "));
+    info("Por eso no resuelve a la IP del servidor: resuelve al CDN, que reenvía.");
+    info("Es correcto, sigo.");
+  } else {
+    warn(`${host} resuelve a ${ipsDominio.join(", ")}`, `y este servidor es ${ipServidor || "(no pude averiguarlo)"}`);
+    info("Si tenés un CDN o proxy delante (Cloudflare y similares), es esperable.");
+    info("Si no, revisá el registro A antes de seguir: el certificado va a fallar.");
+    if (!argv.includes("--si") && !(await confirmar("  ¿Sigo igual?", false))) salir(0);
+  }
 }
 
 // ── 5. puertos ──────────────────────────────────────────────────────────────
@@ -221,7 +241,7 @@ if (process.platform === "linux") {
   los certificados. Cuelgo el CRM de esa red con las etiquetas que Traefik lee,
   ${C.bold("sin tocar nada de lo que ya está andando")} y sin pelear por ningún puerto.
 `);
-      if (await confirmar(`  ¿Lo engancho a ${traefik.nombre}?`, true)) modoFinal = "traefik";
+      if (argv.includes("--si") || (await confirmar(`  ¿Lo engancho a ${traefik.nombre}?`, true))) modoFinal = "traefik";
       else if (await confirmar("  ¿Uso el modo proxy (puerto local, lo conectás vos)?", true)) modoFinal = "proxy";
       else if (!(await confirmar("  ¿Seguro que levanto Caddy igual?", false))) salir(0);
     } else {
