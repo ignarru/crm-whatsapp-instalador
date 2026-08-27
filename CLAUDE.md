@@ -6,6 +6,25 @@ Este repo es un **instalador**, no una aplicación. Instala
 
 ---
 
+## ⭐ Si te llegó solo un link, en una carpeta vacía
+
+Es el caso más común y el que la persona espera que funcione: abre una carpeta
+vacía, te pega el link de este repo y te dice **"instalame este CRM"**. No
+quiere tocar la terminal ni escribir un comando — para eso te tiene a vos.
+
+**Entonces corré vos los comandos. Todos.** La persona solo mira, contesta lo
+que le preguntes, y hace unos clics en Meta y Supabase cuando se lo pidas.
+
+```bash
+git clone https://github.com/ignarru/crm-whatsapp-instalador.git
+cd crm-whatsapp-instalador
+npm run creds        # te dice qué credenciales faltan y de dónde salen
+```
+
+Nunca le digas "ahora corré X". Corrélo y contale qué pasó.
+
+---
+
 ## ⭐ Lo primero: tomá la iniciativa
 
 Quien abre este repo casi siempre quiere montar su CRM y **no sabe por dónde

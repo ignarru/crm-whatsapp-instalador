@@ -37,7 +37,17 @@ Cuatro comandos. Cada uno es idempotente: si falla, arreglás y volvés a correr
 
 ## El flujo
 
-### 0. Antes de nada: ¿tiene las herramientas?
+### 0. La persona no corre comandos: los corrés vos
+
+Casi todo el que llega acá **no programa y no quiere abrir una terminal**. Puede
+haberte pegado solo el link en una carpeta vacía. Tu trabajo es correr vos todo
+lo que haya que correr —clonar, instalar, los cuatro pasos— y pedirle a ella
+únicamente lo que ningún programa puede hacer: los clics en Meta y Supabase.
+
+**Nunca escribas "ahora corré este comando".** Corrélo y contale el resultado en
+una línea. Si falla, arreglalo y seguí; solo contale si necesitás algo suyo.
+
+### 0.b ¿Tiene las herramientas?
 
 Mucha gente que llega acá no programa y puede no tener nada instalado. Chequealo
 vos en silencio, sin hacerle una lista de requisitos:

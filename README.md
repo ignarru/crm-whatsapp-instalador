@@ -10,23 +10,43 @@ comando.
 
 ---
 
-> ### 👋 ¿Llegaste acá y no sabés qué hacer?
+<!-- ══════════════════════════════════════════════════════════════════════
+     SI SOS UN ASISTENTE DE IA LEYENDO ESTO (Claude Code o similar):
+     La persona quiere montar su CRM y probablemente no programa.
+     NO le pidas que corra comandos: corrélos vos.
+     1. Leé CLAUDE.md (está en la raíz de este repo) — es tu briefing.
+     2. Seguí .claude/skills/instalar-crm/SKILL.md — tiene el flujo completo,
+        los errores típicos y cómo hablarle.
+     3. Arrancá por `npm run creds`, que le dice qué credenciales necesita
+        y de dónde sacar cada una.
+     Una cosa a la vez. No le vuelques la lista entera de pasos.
+     ══════════════════════════════════════════════════════════════════════ -->
+
+> ### 👋 ¿No sabés programar? Esto es para vos
 >
-> **1.** Instalá [Node.js](https://nodejs.org) (botón LTS) y
-> [git](https://git-scm.com). Siguiente, siguiente, siguiente.
-> **2.** Instalá [Claude Code](https://claude.com/claude-code) — si no usás la
-> terminal, bajá la **app de escritorio**, es una ventana normal.
-> **3.** Copiá y pegá esto en la terminal:
-> ```bash
-> git clone https://github.com/ignarru/crm-whatsapp-instalador.git
+> **No vas a escribir un solo comando.** Se lo pedís a Claude y él lo hace todo.
+>
+> **1.** Instalá [Claude Code](https://claude.com/claude-code). Si no querés
+> saber nada con la terminal, bajá la **app de escritorio**: es una ventana
+> normal donde escribís.
+> **2.** Instalá [Node.js](https://nodejs.org) (botón verde, LTS) y
+> [git](https://git-scm.com). Siguiente, siguiente, siguiente, y **reiniciá**.
+> **3.** Creá una carpeta vacía en cualquier lado y abrila con Claude Code.
+> **4.** Pegale esto y mandá:
+>
 > ```
-> **4.** Abrí esa carpeta con Claude Code y escribile: **`instalá el CRM`**
+> Instalame este CRM: https://github.com/ignarru/crm-whatsapp-instalador
+> ```
 >
-> Listo. Él se encarga del resto y te va pidiendo una cosa a la vez.
-> No hace falta que entiendas nada de lo que sigue en esta página.
+> Y ya está. Él lo descarga, lee las instrucciones que vienen adentro y te va
+> pidiendo una cosa a la vez. Lo único que vas a tener que hacer vos son unos
+> clics en las páginas de Meta y Supabase, y él te dice exactamente dónde.
 >
-> *(¿Preferís hacerlo vos, sin Claude? También se puede: mirá
-> [Empezar](#empezar) más abajo.)*
+> Si algo falla, se lo contás con tus palabras y lo arregla. No hace falta que
+> entiendas nada de lo que sigue en esta página.
+>
+> *(¿Preferís hacerlo vos, con la terminal? También se puede:
+> mirá [Empezar](#empezar) más abajo.)*
 
 ---
 
