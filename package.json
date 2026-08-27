@@ -15,6 +15,7 @@
     "check": "node scripts/check.mjs",
     "levantar": "node scripts/levantar.mjs",
     "tunel": "node scripts/tunel.mjs",
-    "vincular": "node scripts/vincular.mjs"
+    "vincular": "node scripts/vincular.mjs",
+    "vps": "node scripts/vps.mjs"
   }
 }

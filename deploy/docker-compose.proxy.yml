@@ -1,0 +1,37 @@
+# CRM solo, SIN Caddy — para un servidor que YA tiene un proxy con HTTPS
+# (Traefik, nginx, otro Caddy) ocupando los puertos 80 y 443.
+#
+# Acá el CRM se publica en un puerto local y vos lo enganchás a tu proxy.
+# `npm run vps -- --modo proxy` te imprime qué agregarle.
+name: crm-whatsapp
+
+services:
+  app:
+    build:
+      context: ../crm
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+    env_file:
+      - ../crm/.env.local
+    environment:
+      PORT: 3000
+    ports:
+      # Solo a la interfaz local: que nadie llegue al CRM sin pasar por tu
+      # proxy, que es el que tiene el HTTPS.
+      - '127.0.0.1:${PUERTO_LOCAL:-3000}:3000'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000').then((r)=>process.exit(r.ok||r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

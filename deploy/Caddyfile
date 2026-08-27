@@ -1,0 +1,21 @@
+# Configuración de Caddy. El dominio entra por la variable DOMINIO, que pone
+# el compose: así este archivo no lleva el dominio de nadie adentro.
+#
+# Caddy pide el certificado a Let's Encrypt la primera vez que alguien entra,
+# y lo renueva solo. No hay nada que configurar ni que renovar a mano.
+
+{$DOMINIO} {
+	reverse_proxy app:3000
+
+	# El webhook de WhatsApp puede traer audios y fotos.
+	request_body {
+		max_size 25MB
+	}
+
+	encode gzip
+
+	log {
+		output stdout
+		format console
+	}
+}

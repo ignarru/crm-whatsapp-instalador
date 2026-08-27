@@ -1,0 +1,66 @@
+# CRM + Caddy — para un servidor donde los puertos 80 y 443 están libres.
+#
+# Caddy es el portero: recibe las visitas de internet, saca el certificado
+# HTTPS de Let's Encrypt solo y lo renueva solo, y le pasa el tráfico al CRM.
+# Hace falta porque Meta no acepta webhooks sin https.
+#
+# Se levanta con:  npm run vps
+name: crm-whatsapp
+
+services:
+  app:
+    build:
+      context: ../crm
+      # Las NEXT_PUBLIC_* se incrustan en el código DURANTE el build, así que
+      # viajan como build args y no como variables de entorno. Si cambiás
+      # alguna, hay que reconstruir (npm run vps lo hace).
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+    # Los secretos de servidor se leen en tiempo de ejecución: nunca quedan
+    # dentro de la imagen.
+    env_file:
+      - ../crm/.env.local
+    environment:
+      PORT: 3000
+    # Sin `ports`: el CRM NO se publica al host. La única puerta es Caddy.
+    expose:
+      - '3000'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000').then((r)=>process.exit(r.ok||r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      # El dominio se inyecta acá y el Caddyfile lo lee como {$DOMINIO}.
+      # Así el archivo se puede versionar sin el dominio de nadie adentro.
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Los certificados viven acá. Si borrás este volumen, Caddy los pide de
+      # nuevo — y Let's Encrypt tiene límite de pedidos por semana.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:
