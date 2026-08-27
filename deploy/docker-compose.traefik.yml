@@ -1,0 +1,56 @@
+# CRM detrás de un Traefik que YA tenés andando.
+#
+# Es el caso de cualquier servidor administrado con Dokploy, Coolify, o un
+# Traefik puesto a mano: ya hay algo escuchando en 80/443 y sacando
+# certificados. Acá el CRM no publica ningún puerto: se cuelga de la red del
+# proxy y Traefik lo descubre solo por las etiquetas.
+#
+# Se levanta con:  npm run vps -- --modo traefik
+name: crm-whatsapp
+
+services:
+  app:
+    build:
+      context: ../crm
+      # Las NEXT_PUBLIC_* se incrustan en el código durante el build.
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+    env_file:
+      - ../crm/.env.local
+    environment:
+      PORT: 3000
+    # Sin `ports`: nadie llega al CRM salvo por el proxy.
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      # La mayoría de estos Traefik corren con exposedByDefault: false, así que
+      # sin este enable el contenedor es invisible para el proxy.
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.${ROUTER:-crm}.rule=Host(`${DOMINIO}`)'
+      - 'traefik.http.routers.${ROUTER:-crm}.entrypoints=${ENTRYPOINT:-websecure}'
+      - 'traefik.http.routers.${ROUTER:-crm}.tls.certresolver=${CERTRESOLVER:-letsencrypt}'
+      - 'traefik.http.services.${ROUTER:-crm}.loadbalancer.server.port=3000'
+      # Cuando el contenedor está en varias redes, Traefik necesita que le
+      # digan por cuál hablarle.
+      - 'traefik.docker.network=${RED_PROXY}'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000').then((r)=>process.exit(r.ok||r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  proxy:
+    external: true
+    name: ${RED_PROXY}

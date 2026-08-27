@@ -173,24 +173,73 @@ const puertoOcupado = (p) => {
   }
 };
 
+/** Busca un Traefik andando y la red por la que habla. */
+function detectarTraefik() {
+  try {
+    const ps = execFileSync("docker", ["ps", "--format", "{{.Names}}\t{{.Image}}"], { encoding: "utf8" });
+    const linea = ps.split("\n").find((l) => /traefik/i.test(l));
+    if (!linea) return null;
+    const nombre = linea.split("\t")[0];
+
+    // La red buena es la que comparte con los demás servicios: descartamos las
+    // que Docker crea siempre.
+    const redes = execFileSync("docker", ["network", "ls", "--format", "{{.Name}}"], { encoding: "utf8" })
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((n) => !["bridge", "host", "none", "ingress", "docker_gwbridge"].includes(n));
+
+    const preferida =
+      redes.find((n) => /dokploy|coolify/i.test(n)) ||
+      redes.find((n) => /traefik|proxy|web/i.test(n)) ||
+      redes[0];
+
+    return { nombre, red: preferida, redes };
+  } catch {
+    return null;
+  }
+}
+
 let modoFinal = modo;
-if (modo === "caddy" && process.platform === "linux") {
+let traefik = null;
+
+if (process.platform === "linux") {
   const ocupados = ["80", "443"].map((p) => ({ p, quien: puertoOcupado(p) })).filter((x) => x.quien);
-  if (ocupados.length) {
+
+  if (ocupados.length && modo === "caddy") {
+    traefik = detectarTraefik();
     console.log("");
     for (const o of ocupados) {
-      warn(`El puerto ${o.p} ya está ocupado`, o.quien.split("\n")[0].trim().slice(0, 120));
+      warn(`El puerto ${o.p} ya está ocupado`, o.quien.split("\n")[0].trim().slice(0, 110));
     }
-    console.log(`
-  ${C.yellow("Este servidor ya tiene algo sirviendo web")} —Traefik, nginx, otro Caddy—.
-  Si levanto Caddy ahora va a pelear por el puerto y ${C.bold("puede tirar abajo lo que ya tenés andando")}.
+
+    if (traefik) {
+      console.log(`
+  ${C.green("Encontré un Traefik andando")} (${C.bold(traefik.nombre)}), en la red ${C.bold(traefik.red)}.
+
+  Eso es lo mejor que te podía pasar: ya tenés quien reparta el tráfico y saque
+  los certificados. Cuelgo el CRM de esa red con las etiquetas que Traefik lee,
+  ${C.bold("sin tocar nada de lo que ya está andando")} y sin pelear por ningún puerto.
+`);
+      if (await confirmar(`  ¿Lo engancho a ${traefik.nombre}?`, true)) modoFinal = "traefik";
+      else if (await confirmar("  ¿Uso el modo proxy (puerto local, lo conectás vos)?", true)) modoFinal = "proxy";
+      else if (!(await confirmar("  ¿Seguro que levanto Caddy igual?", false))) salir(0);
+    } else {
+      console.log(`
+  ${C.yellow("Este servidor ya tiene algo sirviendo web")} —nginx, otro Caddy, lo que sea—.
+  Si levanto Caddy ahora va a pelear por el puerto y ${C.bold("puede tirar abajo lo que ya corre")}.
 
   ${C.bold("Lo que conviene:")} el modo proxy. El CRM queda en un puerto local y
   vos lo enganchás a tu proxy, que ya tiene el HTTPS resuelto.
 `);
-    if (await confirmar("  ¿Uso el modo proxy?", true)) modoFinal = "proxy";
-    else if (!(await confirmar("  ¿Seguro que levanto Caddy igual?", false))) salir(0);
-  } else {
+      if (await confirmar("  ¿Uso el modo proxy?", true)) modoFinal = "proxy";
+      else if (!(await confirmar("  ¿Seguro que levanto Caddy igual?", false))) salir(0);
+    }
+  } else if (modo === "traefik") {
+    traefik = detectarTraefik();
+    if (!traefik) morir("No encontré ningún Traefik andando.", "Probá sin --modo, que elige solo.");
+    ok(`Traefik: ${traefik.nombre}`, `red ${traefik.red}`);
+  } else if (!ocupados.length) {
     ok("80 y 443 libres");
   }
 }
@@ -198,13 +247,27 @@ if (modo === "caddy" && process.platform === "linux") {
 // ── 6. levantar ─────────────────────────────────────────────────────────────
 titulo(`6. Levantando (modo ${modoFinal})`);
 
-const archivo = modoFinal === "proxy" ? "docker-compose.proxy.yml" : "docker-compose.vps.yml";
+const archivo =
+  modoFinal === "proxy"
+    ? "docker-compose.proxy.yml"
+    : modoFinal === "traefik"
+      ? "docker-compose.traefik.yml"
+      : "docker-compose.vps.yml";
+
 const entorno = {
   ...process.env,
   DOMINIO: host,
   PUERTO_LOCAL: puertoLocal,
   NEXT_PUBLIC_SITE_URL: publicUrl,
+  RED_PROXY: valorDe("--red", traefik?.red || "dokploy-network"),
+  ROUTER: valorDe("--router", "crm"),
+  ENTRYPOINT: valorDe("--entrypoint", "websecure"),
+  CERTRESOLVER: valorDe("--certresolver", "letsencrypt"),
 };
+
+if (modoFinal === "traefik") {
+  info(`Red: ${entorno.RED_PROXY} · router: ${entorno.ROUTER} · entrypoint: ${entorno.ENTRYPOINT}`);
+}
 
 info("Construyendo la imagen y arrancando. La primera vez tarda unos minutos.");
 const r = spawnSync(
@@ -254,8 +317,13 @@ if (modoFinal === "proxy") {
   salir(0);
 }
 
-info("Caddy está pidiendo el certificado a Let's Encrypt. Suele tardar menos de");
-info("un minuto, pero la primera vez puede irse a dos o tres.");
+if (modoFinal === "traefik") {
+  info("Traefik ya vio el contenedor y está pidiendo el certificado. Suele tardar");
+  info("menos de un minuto la primera vez.");
+} else {
+  info("Caddy está pidiendo el certificado a Let's Encrypt. Suele tardar menos de");
+  info("un minuto, pero la primera vez puede irse a dos o tres.");
+}
 
 let vivo = false;
 for (let i = 1; i <= 40 && !vivo; i++) {
