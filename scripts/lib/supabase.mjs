@@ -7,6 +7,8 @@
  * (https://api.supabase.com/api/v1-json).
  */
 
+import { randomBytes } from "node:crypto";
+
 import { dormir, pedir } from "./ui.mjs";
 
 const BASE = "https://api.supabase.com";
@@ -227,7 +229,6 @@ export class SupabaseAdmin {
 /** Contraseña fuerte para la base, sin caracteres que rompan una URL. */
 export function generarDbPass(largo = 32) {
   const alfabeto = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789-_";
-  const bytes = new Uint8Array(largo);
-  crypto.getRandomValues(bytes);
+  const bytes = randomBytes(largo);
   return Array.from(bytes, (b) => alfabeto[b % alfabeto.length]).join("");
 }

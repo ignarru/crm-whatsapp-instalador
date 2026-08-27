@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import readline from "node:readline";
+import { randomBytes } from "node:crypto";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const CRM_DIR = resolve(ROOT, "crm");
@@ -213,7 +214,7 @@ export function escribirEnv(path, bloques, notaCabecera = "") {
  * Node viejo falla de formas raras y difíciles de interpretar (fetch que no
  * existe, sintaxis que no parsea). Mejor decirlo de entrada y en castellano.
  */
-export function verificarNode(minimo = 20) {
+export function verificarNode(minimo = 18) {
   const mayor = parseInt(process.versions.node.split(".")[0], 10);
   if (Number.isFinite(mayor) && mayor < minimo) {
     console.log(`\n${C.red(C.bold(`✗ Tu Node.js es muy viejo: v${process.versions.node}`))}`);
@@ -282,6 +283,15 @@ export function guardarEstado(parcial) {
 
 // ── utilidades ──────────────────────────────────────────────────────────────
 export const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Bytes al azar en hexadecimal.
+ *
+ * Usa randomBytes de node:crypto y no el `crypto` global a propósito: el
+ * global recién existe desde Node 19, y muchísimos servidores corren Node 18
+ * LTS. Con esto el instalador anda en los dos.
+ */
+export const hexAlAzar = (bytes) => randomBytes(bytes).toString("hex");
 
 /**
  * fetch con timeout, limpiando el temporizador siempre.

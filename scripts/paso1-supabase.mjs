@@ -21,7 +21,7 @@ import { execFileSync } from "node:child_process";
 import {
   ROOT, CRM_DIR, C, ok, fail, warn, info, encabezado, titulo, progreso, morir, salir,
   leerEnv, escribirEnv, leerEstado, guardarEstado, preguntar, elegir, confirmar,
-  rutaCredenciales,
+  rutaCredenciales, hexAlAzar,
 } from "./lib/ui.mjs";
 import { SupabaseAdmin, generarDbPass } from "./lib/supabase.mjs";
 
@@ -321,9 +321,7 @@ console.log("");
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function hex(bytes) {
-  const b = new Uint8Array(bytes);
-  crypto.getRandomValues(b);
-  return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return hexAlAzar(bytes);
 }
 
 /** Si el CRM trae traducción al español, la usamos. Si no, inglés. */

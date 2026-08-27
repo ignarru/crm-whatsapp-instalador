@@ -13,7 +13,7 @@ import { resolve } from "node:path";
 import {
   ROOT, C, ok, fail, warn, info, encabezado, leerEnv, escribirEnv,
   preguntar, confirmar, enmascarar, resumenFinal, problemas,
-  rutaCredenciales, credencialesExternas, verificarNode,
+  rutaCredenciales, credencialesExternas, verificarNode, hexAlAzar,
 } from "./lib/ui.mjs";
 
 verificarNode();
@@ -175,7 +175,5 @@ function guardar(valores) {
 }
 
 function generarVerifyToken() {
-  const b = new Uint8Array(16);
-  crypto.getRandomValues(b);
-  return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return hexAlAzar(16);
 }
